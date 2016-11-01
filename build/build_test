@@ -1,0 +1,36 @@
+#!/bin/sh
+
+func_mkdir(){
+    if test -n $1; then
+      if test ! -d $1; then
+        echo [Creates directory $1]
+        mkdir $1
+        if test ! -d $1; then
+          echo Failed to create directory.
+          exit -1
+        fi
+      fi
+    fi
+}
+
+cur_dir=$PWD
+cd $(dirname $0)
+cd ..
+#PWD Qmachine/
+src_dir=$PWD/test/
+cd $cur_dir
+
+opt_prefix=$cur_dir
+echo $(basename $0) is building Qmachine_test
+func_mkdir test_qm; cd test_qm
+MAKE=make
+MAKEFILE="CodeBlocks - Unix Makefiles"
+sh -c "cmake -G\"$MAKEFILE\" -DCMAKE_BUILD_TYPE=DEBUG $src_dir -DCMAKE_INSTALL_PREFIX=$opt_prefix"
+echo [Make Qdb_test]; $MAKE
+echo [Make install]; $MAKE install
+
+if test ! -f qm.ass \
+  || test qm.ass -ot $src_dir/qm.ass; then
+  echo [Install qm.ass]
+  	sh -c "cp -rf $src_dir/qm.ass $cur_dir/test_qm"
+fi

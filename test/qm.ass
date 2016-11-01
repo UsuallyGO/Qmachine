@@ -1,0 +1,30 @@
+
+_sig:
+	MOV R0 %100
+	MOV R1 %200
+	ADD R0 R1
+	END
+
+_start:
+MOV R0 R1
+CMP %1 %1
+ADDEQ R1 R2
+END
+
+SUB R0 %100
+    MOVGE R0 R9
+
+	_ENTRY:
+_LABEL:
+
+CMPEQ R1 R0
+CAL _start
+JMP _start
+JMPLS _LABEL
+CALEQ _start
+END
+
+129fkw398fk
+
+_8w3rILDJF:
+lsjdgsdjg: aslkdfjasdf sldjfsldf

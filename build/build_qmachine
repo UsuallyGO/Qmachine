@@ -1,0 +1,96 @@
+#!/bin/sh
+
+func_help(){
+    echo \'build_qmachine\' build Qmachine and its depend libraries.
+    echo Usage: $* [OPTIONS]...
+    echo Options:
+    echo "-d, --debug    Build with debug information."
+    echo "-h, --help     Shows Qmachine build help message."
+    echo "--build_static Build static library."
+    echo "--prefix DIR   Specify install directory [default is PWD]."
+    echo "--clean        Remove all files created by build system."
+}
+
+func_mkdir(){
+    if test -n $1; then
+      if test ! -d $1; then
+        echo [Creates directory $1]
+        mkdir $1
+        if test ! -d $1; then
+          echo Failed to create directory.
+          exit -1
+        fi
+      fi
+    fi
+}
+
+opt_debug=true
+opt_prefix=$PWD
+opt_clean=false
+build_static=no
+
+cur_dir=$PWD
+cd $(dirname $0)
+cd ..
+src_dir=$PWD/src
+cd $cur_dir
+
+Q_machinelib=libqmachine.so
+while test $# -gt 0; do
+    opt=$1
+    shift
+    case $opt in
+      -d|--debug) opt_debug=:
+                  ;;
+      -h|--help)  func_help $0
+                  exit 0
+                  ;;
+      --build_static)
+      			  build_static=yes
+      			  Q_machinelib=libqmachine.a
+      			  ;;
+      --prefix)   opt_prefix=$1
+                  shift
+                  ;;
+      --clean)    opt_clean=:
+                  ;;
+      *)          func_help $0
+                   exit 0
+                  ;;
+    esac
+done
+
+cmake_debug="-DCMAKE_BUILD_TYPE=RELEASE"
+if $opt_debug; then
+    cmake_debug="-DCMAKE_BUILD_TYPE=DEBUG"
+fi
+
+cmake_install="install"
+
+echo $(basename $0) is building Qmachine
+func_mkdir qmachine; cd qmachine
+MAKE=make
+MAKEFILE="CodeBlocks - Unix Makefiles"
+
+case "$(uname)" in
+	MINGW32*)
+		MAKE=mingw32-make
+		MAKEFILE="CodeBlocks - MinGW Makefiles"
+		if [ "$build_static" = "yes" ];
+		  then
+			Q_machinelib=libqmachine.a
+		  else
+			Q_machinelib=libqmachine.dll.a
+		fi
+		;;
+esac
+#can only compiled in linux right now...
+sh -c "cmake -G\"$MAKEFILE\" -DCMAKE_INSTALL_PREFIX=$opt_prefix \
+           -DBUILD_STATIC=$build_static $cmake_debug $src_dir/"
+echo [Make Qmachine]; $MAKE
+if test ! -f $opt_prefix/lib/$Q_machinelib \
+|| test $Q_machinelib -nt $opt_prefix/lib/$Q_machinelib; then
+   echo [Install Qmachine]
+   $MAKE $cmake_install
+fi
+

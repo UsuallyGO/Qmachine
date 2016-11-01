@@ -1,0 +1,26 @@
+
+PROJECT(Qmtest)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.0 FATAL_ERROR)
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+FIND_LIBRARY(libqmachine "qmachine" PATH ${CMAKE_CURRENT_BINARY_DIR}/../lib)
+IF(WIN32)
+	SET(${CMAKE_EXE_LINKER_FLAGS} "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${CMAKE_CURRENT_BINARY_DIR}/../lib")
+ENDIF(WIN32)
+
+SET(Qparse_src parse_test.c)
+
+ADD_EXECUTABLE(parse_test ${Qparse_src})
+TARGET_LINK_LIBRARIES(parse_test ${libqmachine})
+
+SET(Qhash_src hash_test.c)
+
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../src)
+ADD_EXECUTABLE(hash_test ${Qhash_src})
+TARGET_LINK_LIBRARIES(hash_test ${libqmachine})
+
+INSTALL(TARGETS parse_test 
+		RUNTIME DESTINATION bin)
+INSTALL(TARGETS hash_test  
+		RUNTIME DESTINATION bin)
